@@ -93,7 +93,7 @@ void breadth_first_search(const GraphType &G, VertIdx_t start,
         auto thread_iter = thread_list.begin();
         for (VertIdx_t vert_idx : curr_lvl) {
             next_lvl.push_back(std::list<VertIdx_t>());
-            *thread_iter = std::thread(traverse_vert<GraphType, VisitorType>, G, vert_idx,
+            *thread_iter = std::thread(traverse_vert<GraphType, VisitorType>, std::ref(G), vert_idx,
             std::ref(visitor), std::ref(next_lvl.back()), std::ref(visited));
             thread_iter++;
         }
