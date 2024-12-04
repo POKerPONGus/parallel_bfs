@@ -3,8 +3,6 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <chrono>
 
-#define VERT_CNT 1000
-
 enum VertColor { WHITE, GRAY, BLACK };
 
 struct VertData {
