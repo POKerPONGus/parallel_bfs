@@ -4,3 +4,5 @@
 !*.cpp
 !*.hpp
 !Makefile
+!LICENSE
+!README.md
