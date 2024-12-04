@@ -12,18 +12,14 @@ void breadth_first_search(const GraphType &G, VertIdx_t start,
     std::vector<VertColor> visited(boost::num_vertices(G), WHITE);
     std::queue<VertIdx_t> queue;
 
-    Timer timer;
     auto vert_pair = boost::vertices(G);
     for (auto i = vert_pair.first; i != vert_pair.second; i++) {
         visitor.initialize_vertex(*i, G);
     }
-    double delta = timer.elapsed();
 
-    std::cout << delta << "\n";
-
+    visited[start] = GRAY;
     visitor.discover_vertex(start, G);
     queue.push(start);
-    visited[start] = GRAY;
 
     while (!queue.empty()) {
         VertIdx_t idx = queue.front();
@@ -35,10 +31,10 @@ void breadth_first_search(const GraphType &G, VertIdx_t start,
             visitor.examine_edge(*i, G);
             VertIdx_t adj_idx = boost::target(*i, G);
             if (visited[adj_idx] == WHITE) {
-                visitor.examine_edge(*i, G);
+                visited[adj_idx] = GRAY;
+                visitor.tree_edge(*i, G);
                 visitor.discover_vertex(adj_idx, G);
                 queue.push(adj_idx);
-                visited[adj_idx] = GRAY;
             } else if (visited[idx] == GRAY) {
                 visitor.non_tree_edge(*i, G);
                 visitor.gray_target(*i, G);

@@ -41,7 +41,7 @@ static void traverse_vert(const GraphType &G, VertIdx_t idx,
         VertIdx_t adj_idx = boost::target(*i, G);
         VertColor expected = WHITE;
         if (visited[adj_idx].compare_exchange_strong(expected, GRAY)) {
-            visitor.examine_edge(*i, G);
+            visitor.tree_edge(*i, G);
             visitor.discover_vertex(adj_idx, G);
             next_idxs.push_back(adj_idx);
         } else if (visited[idx].load() == GRAY) {
@@ -80,7 +80,7 @@ void breadth_first_search(const GraphType &G, VertIdx_t start,
             // for (auto e : branch)
             //     std::cout << e << ", ";
             // std::cout << "\n";
-            
+
             curr_lvl.splice(curr_lvl.end(), branch);
             // std::cout << curr_lvl.size() << "\n";
             // for (auto e : curr_lvl)
@@ -93,8 +93,10 @@ void breadth_first_search(const GraphType &G, VertIdx_t start,
         auto thread_iter = thread_list.begin();
         for (VertIdx_t vert_idx : curr_lvl) {
             next_lvl.push_back(std::list<VertIdx_t>());
-            *thread_iter = std::thread(traverse_vert<GraphType, VisitorType>, std::ref(G), vert_idx,
-            std::ref(visitor), std::ref(next_lvl.back()), std::ref(visited));
+            *thread_iter =
+                std::thread(traverse_vert<GraphType, VisitorType>, std::ref(G),
+                            vert_idx, std::ref(visitor),
+                            std::ref(next_lvl.back()), std::ref(visited));
             thread_iter++;
         }
 
