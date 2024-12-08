@@ -3,8 +3,6 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <chrono>
 
-enum VertColor { WHITE, GRAY, BLACK };
-
 struct VertData {
     int idx;
     std::string name;
@@ -36,3 +34,21 @@ public:
 		return std::chrono::duration_cast<Second>(Clock::now() - m_beg).count();
 	}
 };
+
+template <typename T> std::map<T, std::size_t> get_freq_map(std::vector<T> v)
+{
+    std::map<T, std::size_t> freqs;
+    for (T &e : v) {
+        freqs[e]++;
+    }
+    return freqs;
+}
+
+std::string join_str(std::vector<std::string> &strs, std::string delim)
+{
+    std::string res = strs[0];
+    for (auto str_i = strs.begin() + 1; str_i != strs.end(); str_i++) {
+        res += delim + *str_i;
+    }
+    return res;
+}

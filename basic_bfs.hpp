@@ -4,7 +4,10 @@
 
 #include "main.hpp"
 
-namespace basic {
+namespace basic_bfs {
+
+enum VertColor { WHITE, GRAY, BLACK };
+
 template <class GraphType, class VisitorType>
 void breadth_first_search(const GraphType &G, VertIdx_t start,
                               VisitorType &visitor)

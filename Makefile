@@ -1,4 +1,4 @@
-CPPFLAGS := -pg
+CPPFLAGS := -g -pg
 SRC := main.cpp
 BIN := ${SRC:.cpp=.out}
 IMG_TYPE := png
