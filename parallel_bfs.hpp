@@ -12,6 +12,12 @@ namespace impl {
 
 enum VertColor { WHITE, GRAY, BLACK };
 
+struct ThreadData {
+    VertIdx_t idx;
+    std::list<VertIdx_t> adj_list;
+    bool is_done;
+};
+
 template <typename T> class AtomicWrapper : public std::atomic<T> {
   public:
     AtomicWrapper() : std::atomic<T>() {}
@@ -30,8 +36,89 @@ template <typename T> class AtomicWrapper : public std::atomic<T> {
         return *this;
     }
 };
-
 namespace unlimited_threads {
+template <typename GraphType, typename VisitorType>
+static void _traverse_vert(const GraphType &G, ThreadData &data,
+                           VisitorType &visitor,
+                           std::vector<AtomicWrapper<VertColor>> &visited)
+{
+    visitor.examine_vertex(data.idx, G);
+
+    const auto &edges = boost::out_edges(data.idx, G);
+    for (auto i = edges.first; i != edges.second; i++) {
+        visitor.examine_edge(*i, G);
+        VertIdx_t adj_idx = boost::target(*i, G);
+        VertColor expected = WHITE;
+        if (visited[adj_idx].compare_exchange_strong(expected, GRAY)) {
+            visitor.tree_edge(*i, G);
+            visitor.discover_vertex(adj_idx, G);
+            data.adj_list.push_back(adj_idx);
+        } else if (visited[adj_idx].load() == GRAY) {
+            visitor.non_tree_edge(*i, G);
+            visitor.gray_target(*i, G);
+        } else {
+            visitor.non_tree_edge(*i, G);
+            visitor.black_target(*i, G);
+        }
+    }
+
+    visited[data.idx] = BLACK;
+    visitor.finish_vertex(data.idx, G);
+    data.is_done = true;
+}
+
+template <typename GraphType, typename VisitorType>
+void _breadth_first_search(const GraphType &G, VertIdx_t start,
+                           VisitorType &visitor)
+{
+    std::vector<AtomicWrapper<VertColor>> visited(boost::num_vertices(G),
+                                                  WHITE);
+
+    auto vert_pair = boost::vertices(G);
+    for (auto i = vert_pair.first; i != vert_pair.second; i++) {
+        visitor.initialize_vertex(*i, G);
+    }
+
+    std::list<VertIdx_t> curr_lvl;
+    std::list<ThreadData> next_lvl;
+    visited[start] = GRAY;
+    visitor.discover_vertex(start, G);
+    curr_lvl.push_back(start);
+    do {
+        std::list<std::thread> thread_list;
+        for (VertIdx_t vert_idx : curr_lvl) {
+            next_lvl.push_back({.idx = vert_idx,
+                                .adj_list = std::list<VertIdx_t>(),
+                                .is_done = false});
+            thread_list.push_back(
+                std::thread(_traverse_vert<GraphType, VisitorType>, std::ref(G),
+                            std::ref(next_lvl.back()), std::ref(visitor),
+                            std::ref(visited)));
+        }
+
+        curr_lvl.clear();
+        while (!next_lvl.empty()) { // Waiting
+            auto next_lvl_i = next_lvl.begin();
+            while (next_lvl_i != next_lvl.end()) {
+                auto del_ref = next_lvl_i;
+                if (next_lvl_i->is_done) {
+                    curr_lvl.splice(curr_lvl.end(), next_lvl_i->adj_list);
+                }
+                next_lvl_i++; // increment before deleting
+                if (del_ref->is_done) {
+                    next_lvl.erase(del_ref);
+                }
+            }
+        }
+
+        for (std::thread &t : thread_list) {
+            t.join();
+        }
+    } while (!curr_lvl.empty());
+}
+} // namespace unlimited_threads
+
+namespace unlimited_threads_old {
 template <typename GraphType, typename VisitorType>
 static void _traverse_vert(const GraphType &G, VertIdx_t idx,
                            VisitorType &visitor,
@@ -100,14 +187,9 @@ void _breadth_first_search(const GraphType &G, VertIdx_t start,
         }
     } while (!curr_lvl.empty());
 }
-} // namespace unlimited_threads
+} // namespace unlimited_threads_old
 
 namespace fixed_thread_count {
-struct ThreadData {
-    VertIdx_t idx;
-    std::list<VertIdx_t> adj_list;
-    bool is_done;
-};
 
 template <typename GraphType, typename VisitorType>
 static void _traverse_vert(const GraphType &G, ThreadData &data,
