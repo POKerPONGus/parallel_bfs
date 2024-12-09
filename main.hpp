@@ -1,7 +1,7 @@
 #pragma once
 
-#include <boost/graph/adjacency_list.hpp>
 #include <chrono>
+#include "boost/graph/adjacency_list.hpp"
 
 struct VertData {
     int idx;
@@ -44,11 +44,32 @@ template <typename T> std::map<T, std::size_t> get_freq_map(std::vector<T> v)
     return freqs;
 }
 
-std::string join_str(std::vector<std::string> &strs, std::string delim)
+std::string join_str(const std::vector<std::string> &strs, std::string delim)
 {
     std::string res = strs[0];
     for (auto str_i = strs.begin() + 1; str_i != strs.end(); str_i++) {
         res += delim + *str_i;
     }
     return res;
+}
+
+/**
+ * @brief Splits a string into substrings based on the specified delimiter.
+ *
+ * @param s The string to split.
+ * @param delim delimeter to split at.
+ * @return A vector of substrings.
+ */
+std::vector<std::string> split_str(std::string &s, std::string delim)
+{
+    std::size_t curr_idx = 0;
+    std::list<std::string> str_list;
+    while (curr_idx < s.length()) {
+        std::size_t next_idx = std::min(s.find(delim, curr_idx), s.length());
+        std::string substr = s.substr(curr_idx, next_idx - curr_idx);
+        str_list.insert(str_list.end(), substr);
+        curr_idx = next_idx + 1;
+    }
+    std::vector<std::string> substrs(std::begin(str_list), std::end(str_list));
+    return substrs;
 }
