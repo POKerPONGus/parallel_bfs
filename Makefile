@@ -13,8 +13,6 @@ clean:
 	rm $(OBJS) $(BIN)
 
 $(BIN): %.out : %.cpp $(HEADERS)
-	$(CXX) $(CPPFLAGS) $< -o $@
+	export CPLUS_INCLUDE_PATH=$$CPLUS_INCLUDE_PATH:$(shell pwd) && $(CXX) $(CPPFLAGS) $< -o $@
 
-%.o: %.cpp
-	$(CXX) $(CPPFLAGS) -c $< -o $@
 
