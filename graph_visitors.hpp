@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boost/graph/adjacency_list.hpp>
+#include "main.hpp"
 
 template <typename TimeMap>
 class BFSTimeVisitor : public boost::default_bfs_visitor {
