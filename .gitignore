@@ -1,4 +1,4 @@
-*
+/*
 
 !.gitignore
 !*.cpp
@@ -6,3 +6,5 @@
 !Makefile
 !LICENSE
 !README.md
+!boost/
+!datasets/
