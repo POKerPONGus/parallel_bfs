@@ -5,7 +5,7 @@
 #include <queue>
 #include <random>
 
-#include "boost/graph/breadth_first_search.hpp"
+#include <boost/graph/breadth_first_search.hpp>
 
 #include "basic_bfs.hpp"
 #include "graph_visitors.hpp"
