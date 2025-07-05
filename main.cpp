@@ -4,6 +4,7 @@
 #include <iostream>
 #include <queue>
 #include <random>
+#include <array>
 
 #include <boost/graph/breadth_first_search.hpp>
 
